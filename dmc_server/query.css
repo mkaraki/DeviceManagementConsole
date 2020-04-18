@@ -1,0 +1,14 @@
+h1,h2,h3,h4,h5,h6 {
+    margin: 3px;
+}
+
+.section {
+    border: black solid 1px;
+    padding: 5px;
+    margin: 5px;
+}
+
+td, th {
+    border: black solid 1px;
+    padding: 1px 5px;
+}

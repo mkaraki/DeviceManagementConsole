@@ -1,0 +1,7 @@
+/keepalive/*
+/report/*
+/task/*
+
+!/keepalive/.gitkeep
+!/report/.gitkeep
+!/tast/.gitkeep

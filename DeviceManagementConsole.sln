@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29920.165
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceManagementConsole.WindowsClient", "DeviceManagementConsole.WindowsClient\DeviceManagementConsole.WindowsClient.csproj", "{D00325BE-CC0E-4D39-B665-F95F06A8F5A8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceManagementConsole.Shared", "DeviceManagementConsole.Shared\DeviceManagementConsole.Shared.csproj", "{A9E1DD12-647B-4F51-92A9-0A6EF284BCA7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D00325BE-CC0E-4D39-B665-F95F06A8F5A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D00325BE-CC0E-4D39-B665-F95F06A8F5A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D00325BE-CC0E-4D39-B665-F95F06A8F5A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D00325BE-CC0E-4D39-B665-F95F06A8F5A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9E1DD12-647B-4F51-92A9-0A6EF284BCA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9E1DD12-647B-4F51-92A9-0A6EF284BCA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9E1DD12-647B-4F51-92A9-0A6EF284BCA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9E1DD12-647B-4F51-92A9-0A6EF284BCA7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {993442B0-CB0A-4280-BBA4-59272C15D16B}
+	EndGlobalSection
+EndGlobal
