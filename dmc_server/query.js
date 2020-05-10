@@ -1,7 +1,7 @@
 var now = new Date();
 var unixnow = Math.floor(now.getTime() / 1000);
 
-function addPropTable(p, v) {
+function addPropTable(p, v, warn = false) {
     var tbl = document.getElementById('proptable');
     var tr = document.createElement('tr');
 
@@ -10,6 +10,8 @@ function addPropTable(p, v) {
 
     tdp.innerText = p;
     tdv.innerText = v;
+    if (warn)
+        tdv.setAttribute('class', 'warn');
 
     tr.appendChild(tdp);
     tr.appendChild(tdv);
@@ -58,48 +60,77 @@ function getTimeStringFromSecs(sec) {
     return `${y}/${m}/${d} ${h}:${i}:${s}`;
 }
 
+function getFullDateTimeString(dt) {
+    var datestr = dt.getFullYear() + '/' + (dt.getMonth() + 1) + '/' + dt.getDate();
+
+    var h = dt.getHours();
+    var m = dt.getMinutes();
+    var s = dt.getSeconds();
+    if (h < 10) h = '0' + h;
+    if (m < 10) m = '0' + m;
+    if (s < 10) s = '0' + s;
+
+    return timestr = datestr + `${h}:${m}:${s}`;
+}
+
 window.onload = function () {
     document.getElementById('devname').innerText = devname;
 
-    if (katime == -1)
+    var sigLost = undefined;
+
+    if (katime == -1) {
         addPropTable('Keepalive', 'Disabled');
+    }
     else {
         var ktimeobj = new Date(katime * 1000);
-        var datestr = ktimeobj.getFullYear() + '/' + (ktimeobj.getMonth() + 1) + '/' + ktimeobj.getDate();
 
-        var h = ktimeobj.getHours();
-        var m = ktimeobj.getMinutes();
-        var s = ktimeobj.getSeconds();
-        if (h < 10) h = '0' + h;
-        if (m < 10) m = '0' + m;
-        if (s < 10) s = '0' + s;
+        var timestr = '(' + getFullDateTimeString(ktimeobj) + ')';
 
-        var timestr = '(' + datestr + ' ' + h + ':' + m + ':' + s + ')';
-
-        if (unixnow - katime > 30)
-            addPropTable('Status', 'Lost ' + timestr);
-        else
-            addPropTable('Status', 'Online ' + timestr);
+        if (unixnow - katime > 30) {
+            addPropTable('Keepalive', 'Lost ' + timestr, true);
+            sigLost = true;
+        }
+        else {
+            addPropTable('Keepalive', 'Online ' + timestr);
+            sigLost = false;
+        }
     }
+
+    var reportDate;
 
     if (data === null) {
         addPropTable('Device Monitor', 'Disabled');
+        return;
     }
     else {
-        addPropTable('Computer Status', statusIdToString(data.status));
-
-        // Device
-        addPropTable('Uptime', getTimeStringFromSecs(data.performance.uptime));
-        addPropTable('CPU Processer Time', data.performance.cpuPerc + '%');
-        addPropTable('RAM Available', data.performance.ramMb.toLocaleString() + 'MiB');
-
-        // OS
-        addPropTable('OS', data.os.name);
-        addPropTable('OS Version', data.os.version);
-
-        // Apps
-        addPropTable('DMC Client Version', data.clientVersion);
-        addPropTable('Running Process', data.processes.length);
-        addPropTable('Services', data.services.length);
+        reportDate = new Date(data.create * 1000);
     }
+
+    if (data.statusReportVersion === undefined) {
+        addPropTable('Device Monitor', 'Unsupported version', true);
+        return;
+    }
+
+    if (data.statusReportVersion >= 2) {
+        addPropTable('Device Monitor', 'Last update: ' + getFullDateTimeString(reportDate),
+            unixnow - data.create > 30);
+    }
+
+    addPropTable('Computer Status', statusIdToString(data.status), data.status !== 0);
+
+    // Device
+    addPropTable('Uptime', getTimeStringFromSecs(data.performance.uptime));
+    addPropTable('CPU Processer Time', data.performance.cpuPerc + '%',
+        data.performance.cpuPerc > 90);
+    addPropTable('RAM Available', data.performance.ramMb.toLocaleString() + 'MiB',
+        data.performance.ramMb < 128);
+
+    // OS
+    addPropTable('OS', data.os.name);
+    addPropTable('OS Version', data.os.version);
+
+    // Apps
+    addPropTable('DMC Client Version', data.clientVersion);
+    addPropTable('Running Process', data.processes.length);
+    addPropTable('Services', data.services.length);
 };

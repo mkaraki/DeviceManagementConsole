@@ -1,9 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace DeviceManagementConsole.Shared
 {
     public class StatusReport : KeepaliveReport
     {
+        private static readonly DateTime UNIXOffset = new DateTime(1970,1,1,0,0,0);
+
+        public StatusReport() 
+        {
+            Create = (ulong)(DateTime.UtcNow - UNIXOffset).TotalSeconds;
+            StatusReportVersion = 2;
+        }
+
+        // Report Created Date as UNIX Time
+        public ulong Create { get; set; }
+
+        public uint StatusReportVersion { get; private set; }
+
         public string ClientVersion { get; set; }
 
         // -1: Unknown error

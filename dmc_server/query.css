@@ -12,3 +12,8 @@ td, th {
     border: black solid 1px;
     padding: 1px 5px;
 }
+
+.warn {
+    color: white;
+    background-color: darkorange;
+}

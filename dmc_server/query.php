@@ -42,6 +42,16 @@ if ($report_av)
     <h1>Device Management Console</h1>
     <h3 id="devname"></h3>
     <div class="section">
+        <h5>Access</h5>
+        <form action="query.php" method="GET">
+            <div>
+                <label for="devname">Computer Unique: </label>
+                <input type="text" id="devname" name="q">
+            </div>
+            <input type="submit" value="Check">
+        </form>
+    </div>
+    <div class="section">
         <h5>Queue Task</h5>
         <form action="queuetask.php" method="POST">
             <div>
