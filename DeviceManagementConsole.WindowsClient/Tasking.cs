@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -30,10 +28,10 @@ namespace DeviceManagementConsole.WindowsClient
 
         public static bool RunTask(Shared.RemoteTask task)
         {
-            switch (task.type)
+            switch (task.Type)
             {
                 case "tell":
-                    Tell(task.options.FirstOrDefault() ?? string.Empty);
+                    Tell(task.Options.FirstOrDefault() ?? string.Empty);
                     return true;
 
                 case "lock":

@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Net;
-using System.Web;
-using System.Threading.Tasks;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace DeviceManagementConsole.Shared
 {
@@ -20,6 +17,12 @@ namespace DeviceManagementConsole.Shared
         public string AccessBaseUrl { get; private set; }
 
         public string Unique { get; private set; }
+
+        public static JsonSerializerOptions JsonSerializerOptions { get; private set; } = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = false,
+        };
 
         public Messenger(string Server, int Port, string Unique)
         {
@@ -60,8 +63,9 @@ namespace DeviceManagementConsole.Shared
             {
                 HttpResponseMessage res = await HttpClient.GetAsync(GetAccessUrl("test"));
                 string status = await res.Content.ReadAsStringAsync();
-                if (status == "OK") return true;
-                else return true;
+                status = status.Trim(' ', '\r', '\n');
+                if (res.IsSuccessStatusCode && status == "OK") return true;
+                else return false;
             }
             catch
             {
@@ -75,14 +79,13 @@ namespace DeviceManagementConsole.Shared
 
             try
             {
-                await HttpClient.PutAsync(GetAccessUrl("keepalive"), content);
+                var ret = await HttpClient.PutAsync(GetAccessUrl("keepalive"), content);
+                return ret.IsSuccessStatusCode;
             }
             catch
             {
                 return false;
             }
-
-            return true;
         }
 
         public async Task<string> GetRemoteTaskJsonAsync()
@@ -92,7 +95,7 @@ namespace DeviceManagementConsole.Shared
                 var content = await HttpClient.GetAsync(GetAccessUrl("task"));
                 await RemoveRemoteTaskAsync();
                 string ret = await content.Content.ReadAsStringAsync();
-                if (ret == string.Empty)
+                if (!content.IsSuccessStatusCode || ret == string.Empty)
                     return null;
                 return ret;
             }
@@ -106,13 +109,13 @@ namespace DeviceManagementConsole.Shared
         {
             try
             {
-                await HttpClient.DeleteAsync(GetAccessUrl("task"));
+                var ret = await HttpClient.DeleteAsync(GetAccessUrl("task"));
+                return ret.IsSuccessStatusCode;
             }
             catch
             {
                 return false;
             }
-            return true;
         }
 
         public async Task<bool> SendReportJsonAsync(string reportjson)
@@ -121,14 +124,28 @@ namespace DeviceManagementConsole.Shared
 
             try
             {
-                await HttpClient.PostAsync(GetAccessUrl("report"), content);
+                var ret = await HttpClient.PostAsync(GetAccessUrl("report"), content);
+                return ret.IsSuccessStatusCode;
             }
             catch
             {
                 return false;
             }
+        }
 
-            return true;
+        public bool SendReportJson(string json)
+        {
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            try
+            {
+                var ret = HttpClient.PostAsync(GetAccessUrl("report"), content).GetAwaiter().GetResult();
+                return ret.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

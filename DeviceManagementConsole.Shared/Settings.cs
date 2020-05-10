@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DeviceManagementConsole.Shared
+﻿namespace DeviceManagementConsole.Shared
 {
     public class Settings
     {

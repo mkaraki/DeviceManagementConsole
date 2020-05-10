@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Management;
 using System.ServiceProcess;
 using System.Text.Json;
@@ -18,7 +17,9 @@ namespace DeviceManagementConsole.WindowsClient
 
         private PerformanceCounter cpuPerc = new PerformanceCounter("Processor", "% Processor Time", "_Total");
         private PerformanceCounter ramLeft = new PerformanceCounter("Memory", "Available MBytes");
+        private PerformanceCounter upTime = new PerformanceCounter("System", "System Up Time");
 
+        private int Status = 0;
 
         public Main()
         {
@@ -32,10 +33,13 @@ namespace DeviceManagementConsole.WindowsClient
 
             cpuPerc.NextValue();
             ramLeft.NextValue();
+            upTime.NextValue();
         }
 
         private async void Main_Shown(object sender, EventArgs e)
         {
+            Program.ShutdownBlockReasonCreate(Handle, "Sending shutdown signal");
+
             Hide();
 
             if (!await Messenger.CheckConnectionAsync())
@@ -47,49 +51,97 @@ namespace DeviceManagementConsole.WindowsClient
             timer_statusreport.Enabled = true;
 
             if (Program.Config.KeepaliveEnabled)
+            {
                 timer_keepalive.Enabled = true;
+                lbl_kastatus.Text = "Keepalive: waiting for connect";
+                timer_keepalive_Tick(null, null);
+            }
+            else
+            {
+                lbl_kastatus.Text = "Keepalive: disabled";
+            }
 
             if (Program.Config.TaskEnabled)
+            {
                 timer_task.Enabled = true;
+                lbl_taskstatus.Text = "Remote Task: waiting for connect";
+                timer_task_Tick(null, null);
+            }
+            else
+            {
+                lbl_taskstatus.Text = "Remote Task: disabled";
+            }
 
             nicon_stbar.Text = "Device Management Console";
 
             lbl_connectionstatus.Text = $"Enabled ({Program.Config.ComputerUnique})";
             lbl_lastconnection.Text = "Server check: OK";
-            lbl_kastatus.Text = "Keepalive: server checked";
-            lbl_taskstatus.Text = "Remote Task: server checked";
+            timer_statusreport_Tick(null, null);
 
             DenyStop = true;
         }
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (DenyStop)
+            if (e.CloseReason == CloseReason.WindowsShutDown)
+            {
+                ReportStatusASAP(2);
+            }
+            else if (e.CloseReason == CloseReason.ApplicationExitCall)
+            {
+                ReportStatusASAP(3);
+            }
+            else if (e.CloseReason == CloseReason.UserClosing && DenyStop)
+            {
                 e.Cancel = true;
-            Hide();
+                Hide();
+            }
+            else
+            {
+                ReportStatusASAP(1);
+                e.Cancel = true;
+            }
+        }
+
+        private void ReportStatusASAP(int status = -1)
+        {
+            var report = new Shared.StatusReport()
+            {
+                ClientVersion = Program.Version,
+                Status = Status = status,
+                OS = Program.OSInfo,
+            };
+
+            var json = JsonSerializer.Serialize(report, typeof(Shared.StatusReport), Shared.Messenger.JsonSerializerOptions);
+            Messenger.SendReportJson(json);
+            Debug.WriteLine("Sent ASAP Report");
         }
 
         private void Main_FormClosed(object sender, FormClosedEventArgs e)
         {
+            Console.WriteLine(e.CloseReason);
         }
 
         private async void timer_statusreport_Tick(object sender, EventArgs e)
         {
             var report = new Shared.StatusReport()
             {
-                os = Program.OSInfo
+                ClientVersion = Program.Version,
+                Status = Status,
+                OS = Program.OSInfo,
             };
 
+            report.Processes = GetProcessInformations();
+            report.Services = GetServiceInformations();
 
-            report.processes = GetProcessInformations();
-            report.services = GetServiceInformations();
-
-            report.performance = new Shared.StatusReport.PerformanceInfo() {
-                cpuPerc = cpuPerc.NextValue(),
-                ramMb = ramLeft.NextValue(),
+            report.Performance = new Shared.StatusReport.PerformanceInfo()
+            {
+                CpuPerc = cpuPerc.NextValue(),
+                RamMb = ramLeft.NextValue(),
+                Uptime = (ulong)upTime.NextValue(),
             };
 
-            var json = System.Text.Json.JsonSerializer.Serialize(report, typeof(Shared.StatusReport));
+            var json = JsonSerializer.Serialize(report, typeof(Shared.StatusReport), Shared.Messenger.JsonSerializerOptions);
             bool result = await Task.Run(() => Messenger.SendReportJsonAsync(json));
 
             if (result)
@@ -111,7 +163,7 @@ namespace DeviceManagementConsole.WindowsClient
 
                     var i = new Shared.StatusReport.ProcessInfo((int)id, name)
                     {
-                        commandLine = cmd,
+                        CommandLine = cmd,
                     };
 
                     yield return i;
@@ -120,14 +172,14 @@ namespace DeviceManagementConsole.WindowsClient
         }
 
         private static IEnumerable<Shared.StatusReport.ServiceInfo> GetServiceInformations()
-        { 
+        {
             var servs = ServiceController.GetServices();
             foreach (var serv in servs)
             {
                 var stt = serv.Status;
                 var i = new Shared.StatusReport.ServiceInfo(serv.DisplayName)
                 {
-                    status = stt.ToString(),
+                    Status = stt.ToString(),
                 };
                 yield return i;
             }
@@ -135,7 +187,6 @@ namespace DeviceManagementConsole.WindowsClient
 
         private async void timer_keepalive_Tick(object sender, EventArgs e)
         {
-
             bool result = await Task.Run(() => Messenger.SendKeepaliveAsync());
 
             if (result)
@@ -165,7 +216,7 @@ namespace DeviceManagementConsole.WindowsClient
             var task = JsonSerializer.Deserialize<Shared.RemoteTask>(json);
 
             var result = Tasking.RunTask(task);
-            
+
             if (result)
                 lbl_taskstatus.Text = "Remote Task: task executed";
             else

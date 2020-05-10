@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29920.165
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceManagementConsole.WindowsClient", "DeviceManagementConsole.WindowsClient\DeviceManagementConsole.WindowsClient.csproj", "{D00325BE-CC0E-4D39-B665-F95F06A8F5A8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceManagementConsole.Shared", "DeviceManagementConsole.Shared\DeviceManagementConsole.Shared.csproj", "{A9E1DD12-647B-4F51-92A9-0A6EF284BCA7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceManagementConsole.Shared", "DeviceManagementConsole.Shared\DeviceManagementConsole.Shared.csproj", "{A9E1DD12-647B-4F51-92A9-0A6EF284BCA7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

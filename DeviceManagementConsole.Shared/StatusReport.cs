@@ -4,55 +4,66 @@ namespace DeviceManagementConsole.Shared
 {
     public class StatusReport : KeepaliveReport
     {
-        public OSInfo os { get; set; }
+        public string ClientVersion { get; set; }
 
-        public PerformanceInfo performance { get; set; }
+        // -1: Unknown error
+        // 0: running
+        // 1: closeing by user
+        // 2: shutting down
+        // 3: Application stopped by self
+        public int Status { get; set; }
 
-        public IEnumerable<ProcessInfo> processes { get; set; }
+        public OSInfo OS { get; set; }
 
-        public IEnumerable<ServiceInfo> services { get; set; }
+        public PerformanceInfo Performance { get; set; }
 
-        public class PerformanceInfo 
+        public IEnumerable<ProcessInfo> Processes { get; set; }
+
+        public IEnumerable<ServiceInfo> Services { get; set; }
+
+        public class PerformanceInfo
         {
-            public float cpuPerc { get; set; }
+            public float CpuPerc { get; set; }
 
-            public float ramMb { get; set; }
+            public float RamMb { get; set; }
+
+            public ulong Uptime { get; set; }
         }
 
         public class ProcessInfo
         {
             public ProcessInfo(int pid, string name)
             {
-                this.pid = pid;
-                this.name = name;
+                this.Pid = pid;
+                this.Name = name;
             }
 
-            public int pid { get; set; }
+            public int Pid { get; set; }
 
-            public string name { get; set; }
+            public string Name { get; set; }
 
-            public string user { get; set; }
+            public string User { get; set; }
 
-            public string commandLine { get; set; }
+            public string CommandLine { get; set; }
         }
 
         public class ServiceInfo
         {
             public ServiceInfo(string name)
             {
-                this.name = name;
+                this.Name = name;
             }
 
-            public string name { get; set; }
+            public string Name { get; set; }
 
-            public string status { get; set; }
+            public string Status { get; set; }
         }
 
         public class OSInfo
         {
-            public string name { get; set; }
+            public string Name { get; set; }
 
-            public string version { get; set; }
+            public string Version { get; set; }
         }
     }
 }
